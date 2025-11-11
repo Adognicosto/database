@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Prodotti - Home</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 50px 40px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        h1 {
+            color: #2d3748;
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+
+        .subtitle {
+            color: #718096;
+            font-size: 1.2em;
+            margin-bottom: 50px;
+        }
+
+        .buttons-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .nav-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            min-height: 200px;
+        }
+
+        .nav-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+        }
+
+        .nav-button.difetti {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.3);
+        }
+
+        .nav-button.difetti:hover {
+            box-shadow: 0 10px 30px rgba(245, 87, 108, 0.5);
+        }
+
+        .button-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+
+        .button-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .button-description {
+            font-size: 0.95em;
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+
+        .button-badge {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            margin-top: 15px;
+            font-weight: 600;
+        }
+
+        .info-box {
+            background: #f7fafc;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: left;
+            color: #2d3748;
+            margin-top: 30px;
+        }
+
+        .info-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .info-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-box li {
+            padding: 5px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .info-box li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #48bb78;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .logo {
+                font-size: 60px;
+            }
+
+            .subtitle {
+                font-size: 1em;
+            }
+
+            .buttons-container {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-button {
+                min-height: 180px;
+                padding: 30px 20px;
+            }
+
+            .button-icon {
+                font-size: 50px;
+            }
+
+            .button-title {
+                font-size: 1.3em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🗂️</div>
+        <h1>Database Prodotti</h1>
+        <p class="subtitle">Seleziona il database da consultare</p>
+
+        <div class="buttons-container">
+            <a href="database_prodotti.html" class="nav-button">
+                <div class="button-icon">📦</div>
+                <div class="button-title">Database Principale</div>
+                <div class="button-description">
+                    IVA Margine & IVA Standard<br>
+                    Ricerca avanzata con filtri
+                </div>
+                <div class="button-badge">3999 prodotti</div>
+            </a>
+
+            <a href="database_difetti.html" class="nav-button difetti">
+                <div class="button-icon">🛠️</div>
+                <div class="button-title">Prodotti Con Difetti</div>
+                <div class="button-description">
+                    Inventario prodotti danneggiati<br>
+                    Con link eBay diretti
+                </div>
+                <div class="button-badge">770 prodotti</div>
+            </a>
+        </div>
+
+        <div class="info-box">
+            <h3>✨ Funzionalità</h3>
+            <ul>
+                <li>Ricerca avanzata multi-parola</li>
+                <li>Filtri per anno, dimensione, memoria, processore, ecc.</li>
+                <li>Evidenziazione termini cercati</li>
+                <li>Ottimizzato per mobile e desktop</li>
+                <li>Export dati in CSV</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

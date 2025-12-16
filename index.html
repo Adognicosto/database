@@ -123,7 +123,7 @@
         .modal {
             display: none;
             position: fixed;
-            z-index: 1000;
+            z-index: 10000;
             left: 0;
             top: 0;
             width: 100%;
@@ -135,7 +135,7 @@
             from { opacity: 0; }
             to { opacity: 1; }
         }
-        .modal.show { display: flex; align-items: center; justify-content: center; }
+        .modal.show { display: flex !important; align-items: center; justify-content: center; }
         .modal-content {
             background: white;
             padding: 40px;
@@ -371,26 +371,56 @@ let dataMargine=[],dataStandard=[],currentTab='margine';
 let currentQRCode = null;
 let currentProduct = null;
 
-async function loadData(){try{const[r1,r2]=await Promise.all([fetch('data_margine.json'),fetch('data_standard.json')]);dataMargine=await r1.json();dataStandard=await r2.json();document.getElementById('loadingScreen').style.display='none';document.getElementById('mainContent').style.display='block';populateFilters('margine',dataMargine);populateFilters('standard',dataStandard);setupEventListeners()}catch(e){document.getElementById('loadingScreen').innerHTML='<div style="color:white;text-align:center;"><h2>❌ Errore</h2><p>File JSON non trovati</p></div>'}}
+async function loadData(){
+    try{
+        const[r1,r2]=await Promise.all([fetch('data_margine.json'),fetch('data_standard.json')]);
+        dataMargine=await r1.json();
+        dataStandard=await r2.json();
+        document.getElementById('loadingScreen').style.display='none';
+        document.getElementById('mainContent').style.display='block';
+        populateFilters('margine',dataMargine);
+        populateFilters('standard',dataStandard);
+        setupEventListeners();
+    }catch(e){
+        console.error('Errore caricamento:', e);
+        document.getElementById('loadingScreen').innerHTML='<div style="color:white;text-align:center;"><h2>❌ Errore</h2><p>File JSON non trovati</p></div>';
+    }
+}
 
-function showQR(cod, desc) {
-    currentProduct = { cod, desc };
-    document.getElementById('modalCode').textContent = cod;
-    document.getElementById('modalDesc').textContent = desc;
-    
-    const qrContainer = document.getElementById('modalQR');
-    qrContainer.innerHTML = '';
-    
-    currentQRCode = new QRCode(qrContainer, {
-        text: cod,
-        width: 200,
-        height: 200,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-    });
-    
-    document.getElementById('qrModal').classList.add('show');
+function showQR(index, type) {
+    try {
+        const data = type === 'margine' ? dataMargine : dataStandard;
+        const item = data[index];
+        
+        if (!item) {
+            console.error('Prodotto non trovato:', index);
+            return;
+        }
+        
+        const cod = item.COD_VENDOR || '';
+        const desc = item.DESCRIZIONE || '';
+        
+        currentProduct = { cod, desc };
+        document.getElementById('modalCode').textContent = cod;
+        document.getElementById('modalDesc').textContent = desc;
+        
+        const qrContainer = document.getElementById('modalQR');
+        qrContainer.innerHTML = '';
+        
+        new QRCode(qrContainer, {
+            text: cod,
+            width: 200,
+            height: 200,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+        
+        document.getElementById('qrModal').classList.add('show');
+    } catch(e) {
+        console.error('Errore generazione QR:', e);
+        alert('Errore nella generazione del QR code');
+    }
 }
 
 function closeModal() {
@@ -445,9 +475,13 @@ window.onclick = function(event) {
 }
 
 function setupEventListeners(){document.getElementById('searchMargine').addEventListener('input',()=>render('margine'));document.getElementById('fDimM').addEventListener('change',()=>render('margine'));document.getElementById('fMemM').addEventListener('change',()=>render('margine'));document.getElementById('fHDDM').addEventListener('change',()=>render('margine'));document.getElementById('fProcM').addEventListener('change',()=>render('margine'));document.getElementById('fFreqM').addEventListener('change',()=>render('margine'));document.getElementById('fVGAM').addEventListener('change',()=>render('margine'));document.getElementById('fColM').addEventListener('change',()=>render('margine'));document.getElementById('resetM').addEventListener('click',()=>reset('margine'));document.getElementById('searchStandard').addEventListener('input',()=>render('standard'));document.getElementById('fDimS').addEventListener('change',()=>render('standard'));document.getElementById('fMemS').addEventListener('change',()=>render('standard'));document.getElementById('fHDDS').addEventListener('change',()=>render('standard'));document.getElementById('fProcS').addEventListener('change',()=>render('standard'));document.getElementById('fFreqS').addEventListener('change',()=>render('standard'));document.getElementById('fVGAS').addEventListener('change',()=>render('standard'));document.getElementById('fColS').addEventListener('change',()=>render('standard'));document.getElementById('resetS').addEventListener('click',()=>reset('standard'))}
+
 function switchTab(tab){currentTab=tab;document.querySelectorAll('.tab-button').forEach(b=>b.classList.remove('active'));event.target.classList.add('active');document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));document.getElementById('tab-'+tab).classList.add('active')}
+
 function highlight(t,terms){if(!terms||!t)return t;let r=String(t);terms.forEach(term=>{const re=new RegExp('('+term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');r=r.replace(re,'<span class="highlight">$1</span>')});return r}
+
 function populateFilters(type,data){const t=type==='margine'?'M':'S';const dims=[...new Set(data.map(i=>i.DIMENSIONE).filter(v=>v))].sort();const mems=[...new Set(data.map(i=>i.MEMORIA).filter(v=>v))].sort((a,b)=>parseInt(a)-parseInt(b));const hdds=[...new Set(data.map(i=>i.HDD).filter(v=>v))].sort((a,b)=>{const getSize=s=>{const m=s.match(/(\d+)\s*(GB|TB)/i);if(!m)return 0;return parseInt(m[1])*(m[2].toUpperCase()==='TB'?1024:1)};return getSize(a)-getSize(b)});const procs=[...new Set(data.map(i=>i.PROCESSORE).filter(v=>v))].sort();const freqs=[...new Set(data.map(i=>i.FREQUENZA).filter(v=>v))].sort((a,b)=>parseFloat(a)-parseFloat(b));const vgas=[...new Set(data.map(i=>i.VGA).filter(v=>v))].sort();const cols=[...new Set(data.map(i=>i.COLORE).filter(v=>v))].sort();const fill=(id,vals)=>{const sel=document.getElementById(id);sel.innerHTML='<option value="">Tutte</option>';vals.forEach(v=>{const opt=document.createElement('option');opt.value=v;opt.textContent=v;sel.appendChild(opt)})};fill('fDim'+t,dims);fill('fMem'+t,mems);fill('fHDD'+t,hdds);fill('fProc'+t,procs);fill('fFreq'+t,freqs);fill('fVGA'+t,vgas);fill('fCol'+t,cols)}
+
 function removeFilter(type,key){const t=type==='margine'?'M':'S';const map={search:'search'+(type==='margine'?'Margine':'Standard'),dim:'fDim'+t,mem:'fMem'+t,hdd:'fHDD'+t,proc:'fProc'+t,freq:'fFreq'+t,vga:'fVGA'+t,col:'fCol'+t};const el=document.getElementById(map[key]);if(el){el.value='';render(type)}}
 
 function render(type){
@@ -533,11 +567,10 @@ function render(type){
     noRes.classList.remove('show');
     table.classList.add('show');
     
-    body.innerHTML = filtered.map(item => {
-        const cod = (item.COD_VENDOR || '').replace(/'/g, "\\'");
-        const desc = (item.DESCRIZIONE || '').replace(/'/g, "\\'");
+    body.innerHTML = filtered.map((item, idx) => {
+        const originalIdx = data.indexOf(item);
         return `<tr>
-            <td><button class="btn btn-qr" onclick="showQR('${cod}','${desc}')">📱 QR</button></td>
+            <td><button class="btn btn-qr" onclick="showQR(${originalIdx}, '${type}')">📱 QR</button></td>
             <td><strong>${highlight(item.COD_VENDOR||'',words)}</strong></td>
             <td class="desc-cell">${highlight(item.DESCRIZIONE||'',words)}</td>
             <td>${item.DIMENSIONE||'-'}</td>
@@ -552,7 +585,9 @@ function render(type){
 }
 
 function reset(type){const t=type==='margine'?'M':'S';document.getElementById('search'+(type==='margine'?'Margine':'Standard')).value='';document.getElementById('fDim'+t).value='';document.getElementById('fMem'+t).value='';document.getElementById('fHDD'+t).value='';document.getElementById('fProc'+t).value='';document.getElementById('fFreq'+t).value='';document.getElementById('fVGA'+t).value='';document.getElementById('fCol'+t).value='';render(type)}
+
 function exportCSV(type){const data=type==='margine'?dataMargine:dataStandard;const headers=['COD_VENDOR','DESCRIZIONE','DIMENSIONE','MEMORIA','HDD','PROCESSORE','FREQUENZA','VGA','COLORE'];let csv=headers.join(',')+'\n';data.forEach(item=>{const row=headers.map(h=>'"'+(item[h]||'').toString().replace(/"/g,'""')+'"');csv+=row.join(',')+'\n'});const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download='prodotti_iva_'+type+'.csv';link.click()}
+
 window.onload=loadData;
     </script>
 </body>

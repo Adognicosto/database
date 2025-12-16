@@ -11,7 +11,7 @@
         .loader { width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.3); border-top: 5px solid white; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .loading-text { font-size: 1.2em; font-weight: 600; }
-        .container { max-width: 1800px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); overflow: hidden; }
+        .container { max-width: 1600px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); overflow: hidden; }
         .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; position: relative; }
         .home-button { position: absolute; left: 30px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.2); color: white; text-decoration: none; padding: 10px 20px; border-radius: 20px; font-size: 14px; font-weight: 600; transition: all 0.3s ease; }
         .home-button:hover { background: rgba(255,255,255,0.3); }
@@ -103,9 +103,7 @@
         tbody tr { transition: all 0.2s ease; }
         tbody tr:hover { background: #f8f9fa; transform: scale(1.002); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .highlight { background-color: #fff3cd; padding: 2px 4px; border-radius: 3px; font-weight: 600; }
-        .desc-cell { max-width: 200px; word-wrap: break-word; white-space: normal; line-height: 1.4; }
-        .qr-cell { text-align: center; padding: 8px !important; background: #f8f9fa; }
-        .qr-cell canvas { display: block; margin: 0 auto; border: 2px solid #ddd; border-radius: 5px; }
+        .desc-cell { max-width: 250px; word-wrap: break-word; white-space: normal; line-height: 1.4; }
         .empty-value { color: #999; font-style: italic; font-size: 12px; }
         .no-results { text-align: center; padding: 60px; color: #6c757d; display: none; }
         .no-results.show { display: block; }
@@ -128,11 +126,8 @@
             .welcome-message { padding: 40px 20px; }
             .welcome-message h2 { font-size: 1.5em; }
             .welcome-message p { font-size: 1em; }
-            .qr-cell canvas { width: 60px !important; height: 60px !important; }
         }
     </style>
-    <!-- QRCode.js Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
     <div id="loadingScreen">
@@ -144,7 +139,7 @@
             <div class="header">
                 <a href="index.html" class="home-button">🏠 Home</a>
                 <h1>🔍 Database Prodotti</h1>
-                <p>Sistema di ricerca avanzata con QR Code - 4004 prodotti</p>
+                <p>Sistema di ricerca avanzata - 4004 prodotti</p>
             </div>
             <div class="tab-navigation">
                 <button class="tab-button active" onclick="switchTab('margine')">📦 IVA Margine <span class="db-badge badge-margine">1168</span></button>
@@ -186,12 +181,12 @@
                                 <li>Digita nella barra di ricerca (codice, descrizione, VGA...)</li>
                                 <li>Usa i filtri per filtrare per caratteristiche specifiche</li>
                                 <li>Combina ricerca e filtri per risultati precisi</li>
-                                <li>1168 prodotti disponibili - QR code generati automaticamente</li>
+                                <li>1168 prodotti disponibili nel database</li>
                             </ul>
                         </div>
                     </div>
                     <table id="tableM">
-                        <thead><tr><th>QR</th><th>COD</th><th>DESCRIZIONE</th><th>DIM</th><th>MEM</th><th>HDD</th><th>PROC</th><th>FREQ</th><th>VGA</th><th>COL</th></tr></thead>
+                        <thead><tr><th>COD</th><th>DESCRIZIONE</th><th>DIM</th><th>MEM</th><th>HDD</th><th>PROC</th><th>FREQ</th><th>VGA</th><th>COL</th></tr></thead>
                         <tbody id="bodyM"></tbody>
                     </table>
                     <div id="noResM" class="no-results"><h3>Nessun risultato</h3><p>Prova a modificare i filtri o la ricerca</p></div>
@@ -233,12 +228,12 @@
                                 <li>Digita nella barra di ricerca (codice, descrizione, VGA...)</li>
                                 <li>Usa i filtri per filtrare per caratteristiche specifiche</li>
                                 <li>Combina ricerca e filtri per risultati precisi</li>
-                                <li>2836 prodotti disponibili - QR code generati automaticamente</li>
+                                <li>2836 prodotti disponibili nel database</li>
                             </ul>
                         </div>
                     </div>
                     <table id="tableS">
-                        <thead><tr><th>QR</th><th>COD</th><th>DESCRIZIONE</th><th>DIM</th><th>MEM</th><th>HDD</th><th>PROC</th><th>FREQ</th><th>VGA</th><th>COL</th></tr></thead>
+                        <thead><tr><th>COD</th><th>DESCRIZIONE</th><th>DIM</th><th>MEM</th><th>HDD</th><th>PROC</th><th>FREQ</th><th>VGA</th><th>COL</th></tr></thead>
                         <tbody id="bodyS"></tbody>
                     </table>
                     <div id="noResS" class="no-results"><h3>Nessun risultato</h3><p>Prova a modificare i filtri o la ricerca</p></div>
@@ -249,153 +244,24 @@
     <script>
 let dataMargine=[],dataStandard=[],currentTab='margine';
 async function loadData(){try{const[r1,r2]=await Promise.all([fetch('data_margine.json'),fetch('data_standard.json')]);dataMargine=await r1.json();dataStandard=await r2.json();document.getElementById('loadingScreen').style.display='none';document.getElementById('mainContent').style.display='block';populateFilters('margine',dataMargine);populateFilters('standard',dataStandard);setupEventListeners()}catch(e){document.getElementById('loadingScreen').innerHTML='<div style="color:white;text-align:center;"><h2>❌ Errore</h2><p>File JSON non trovati</p></div>'}}
-
-function generateQRCode(text, size = 100) {
-    const canvas = document.createElement('canvas');
-    canvas.width = size;
-    canvas.height = size;
-    const qr = new QRCode(canvas, {
-        text: text,
-        width: size,
-        height: size,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.M
-    });
-    return canvas;
-}
-
 function setupEventListeners(){document.getElementById('searchMargine').addEventListener('input',()=>render('margine'));document.getElementById('fDimM').addEventListener('change',()=>render('margine'));document.getElementById('fMemM').addEventListener('change',()=>render('margine'));document.getElementById('fHDDM').addEventListener('change',()=>render('margine'));document.getElementById('fProcM').addEventListener('change',()=>render('margine'));document.getElementById('fFreqM').addEventListener('change',()=>render('margine'));document.getElementById('fVGAM').addEventListener('change',()=>render('margine'));document.getElementById('fColM').addEventListener('change',()=>render('margine'));document.getElementById('resetM').addEventListener('click',()=>reset('margine'));document.getElementById('searchStandard').addEventListener('input',()=>render('standard'));document.getElementById('fDimS').addEventListener('change',()=>render('standard'));document.getElementById('fMemS').addEventListener('change',()=>render('standard'));document.getElementById('fHDDS').addEventListener('change',()=>render('standard'));document.getElementById('fProcS').addEventListener('change',()=>render('standard'));document.getElementById('fFreqS').addEventListener('change',()=>render('standard'));document.getElementById('fVGAS').addEventListener('change',()=>render('standard'));document.getElementById('fColS').addEventListener('change',()=>render('standard'));document.getElementById('resetS').addEventListener('click',()=>reset('standard'))}
 function switchTab(tab){currentTab=tab;document.querySelectorAll('.tab-button').forEach(b=>b.classList.remove('active'));event.target.classList.add('active');document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));document.getElementById('tab-'+tab).classList.add('active')}
 function highlight(t,terms){if(!terms||!t)return t;let r=String(t);terms.forEach(term=>{const re=new RegExp('('+term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');r=r.replace(re,'<span class="highlight">$1</span>')});return r}
 function populateFilters(type,data){const t=type==='margine'?'M':'S';const dims=[...new Set(data.map(i=>i.DIMENSIONE).filter(v=>v))].sort();const mems=[...new Set(data.map(i=>i.MEMORIA).filter(v=>v))].sort((a,b)=>parseInt(a)-parseInt(b));const hdds=[...new Set(data.map(i=>i.HDD).filter(v=>v))].sort((a,b)=>{const getSize=s=>{const m=s.match(/(\d+)\s*(GB|TB)/i);if(!m)return 0;return parseInt(m[1])*(m[2].toUpperCase()==='TB'?1024:1)};return getSize(a)-getSize(b)});const procs=[...new Set(data.map(i=>i.PROCESSORE).filter(v=>v))].sort();const freqs=[...new Set(data.map(i=>i.FREQUENZA).filter(v=>v))].sort((a,b)=>parseFloat(a)-parseFloat(b));const vgas=[...new Set(data.map(i=>i.VGA).filter(v=>v))].sort();const cols=[...new Set(data.map(i=>i.COLORE).filter(v=>v))].sort();const fill=(id,vals)=>{const sel=document.getElementById(id);sel.innerHTML='<option value="">Tutte</option>';vals.forEach(v=>{const opt=document.createElement('option');opt.value=v;opt.textContent=v;sel.appendChild(opt)})};fill('fDim'+t,dims);fill('fMem'+t,mems);fill('fHDD'+t,hdds);fill('fProc'+t,procs);fill('fFreq'+t,freqs);fill('fVGA'+t,vgas);fill('fCol'+t,cols)}
 function removeFilter(type,key){const t=type==='margine'?'M':'S';const map={search:'search'+(type==='margine'?'Margine':'Standard'),dim:'fDim'+t,mem:'fMem'+t,hdd:'fHDD'+t,proc:'fProc'+t,freq:'fFreq'+t,vga:'fVGA'+t,col:'fCol'+t};const el=document.getElementById(map[key]);if(el){el.value='';render(type)}}
-
-function render(type){
-    const t=type==='margine'?'M':'S';
-    const data=type==='margine'?dataMargine:dataStandard;
-    const search=document.getElementById('search'+(type==='margine'?'Margine':'Standard')).value.toLowerCase().trim();
-    const words=search?search.split(/\s+/).filter(w=>w):[];
-    const fDim=document.getElementById('fDim'+t).value;
-    const fMem=document.getElementById('fMem'+t).value;
-    const fHDD=document.getElementById('fHDD'+t).value;
-    const fProc=document.getElementById('fProc'+t).value;
-    const fFreq=document.getElementById('fFreq'+t).value;
-    const fVGA=document.getElementById('fVGA'+t).value;
-    const fCol=document.getElementById('fCol'+t).value;
-    
-    const hasFilters=search||fDim||fMem||fHDD||fProc||fFreq||fVGA||fCol;
-    const welcomeMsg=document.getElementById('welcomeMsg'+t);
-    const resultsInfo=document.getElementById('resultsInfo'+t);
-    const table=document.getElementById('table'+t);
-    const noRes=document.getElementById('noRes'+t);
-    
-    if(!hasFilters){
-        welcomeMsg.style.display='block';
-        resultsInfo.classList.remove('show');
-        table.classList.remove('show');
-        noRes.classList.remove('show');
-        document.getElementById('activeFilters'+t).classList.remove('show');
-        return;
-    }
-    
-    welcomeMsg.style.display='none';
-    resultsInfo.classList.add('show');
-    
-    const filtered=data.filter(item=>{
-        let match=true;
-        if(words.length>0){
-            const text=[item.COD_VENDOR||'',item.DESCRIZIONE||'',item.FREQUENZA||'',item.VGA||''].join(' ').toLowerCase();
-            match=words.every(w=>text.includes(w));
-        }
-        if(match&&fDim&&item.DIMENSIONE!==fDim)match=false;
-        if(match&&fMem&&item.MEMORIA!==fMem)match=false;
-        if(match&&fHDD&&item.HDD!==fHDD)match=false;
-        if(match&&fProc&&item.PROCESSORE!==fProc)match=false;
-        if(match&&fFreq&&item.FREQUENZA!==fFreq)match=false;
-        if(match&&fVGA&&item.VGA!==fVGA)match=false;
-        if(match&&fCol&&item.COLORE!==fCol)match=false;
-        return match;
-    });
-    
-    const body=document.getElementById('body'+t);
-    const count=document.getElementById('count'+t);
-    const resetBtn=document.getElementById('reset'+t);
-    const activeFilters=document.getElementById('activeFilters'+t);
-    const tags=document.getElementById('tags'+t);
-    
-    count.textContent=`Trovati: ${filtered.length} prodotti`;
-    resetBtn.style.display='inline-block';
-    
-    const activeTags=[];
-    if(search)activeTags.push({label:'Ricerca',value:search,key:'search'});
-    if(fDim)activeTags.push({label:'Dimensione',value:fDim,key:'dim'});
-    if(fMem)activeTags.push({label:'Memoria',value:fMem,key:'mem'});
-    if(fHDD)activeTags.push({label:'HDD',value:fHDD,key:'hdd'});
-    if(fProc)activeTags.push({label:'Processore',value:fProc,key:'proc'});
-    if(fFreq)activeTags.push({label:'Frequenza',value:fFreq,key:'freq'});
-    if(fVGA)activeTags.push({label:'VGA',value:fVGA,key:'vga'});
-    if(fCol)activeTags.push({label:'Colore',value:fCol,key:'col'});
-    
-    if(activeTags.length>0){
-        activeFilters.classList.add('show');
-        tags.innerHTML=activeTags.map(tag=>`<span class="filter-tag">${tag.label}: ${tag.value} <span class="remove" onclick="removeFilter('${type}','${tag.key}')">×</span></span>`).join('');
-    }else{
-        activeFilters.classList.remove('show');
-    }
-    
-    if(filtered.length===0){
-        body.innerHTML='';
-        noRes.classList.add('show');
-        table.classList.remove('show');
-        return;
-    }
-    
-    noRes.classList.remove('show');
-    table.classList.add('show');
-    
-    // Generate rows with QR codes
-    body.innerHTML = '';
-    filtered.forEach(item => {
-        const row = document.createElement('tr');
-        
-        // QR Code cell
-        const qrCell = document.createElement('td');
-        qrCell.className = 'qr-cell';
-        const qrDiv = document.createElement('div');
-        qrDiv.id = 'qr-' + Math.random().toString(36).substr(2, 9);
-        qrCell.appendChild(qrDiv);
-        row.appendChild(qrCell);
-        
-        // Other cells
-        row.innerHTML += `
-            <td><strong>${highlight(item.COD_VENDOR||'',words)}</strong></td>
-            <td class="desc-cell">${highlight(item.DESCRIZIONE||'',words)}</td>
-            <td>${item.DIMENSIONE||'-'}</td>
-            <td>${item.MEMORIA||'-'}</td>
-            <td>${item.HDD||'-'}</td>
-            <td>${item.PROCESSORE||'-'}</td>
-            <td>${highlight(item.FREQUENZA||'',words)||'-'}</td>
-            <td>${highlight(item.VGA||'',words)||'-'}</td>
-            <td>${item.COLORE||'-'}</td>
-        `;
-        
-        body.appendChild(row);
-        
-        // Generate QR code after row is added to DOM
-        setTimeout(() => {
-            new QRCode(qrDiv, {
-                text: item.COD_VENDOR || '',
-                width: 100,
-                height: 100,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.M
-            });
-        }, 0);
-    });
-}
-
+function render(type){const t=type==='margine'?'M':'S';const data=type==='margine'?dataMargine:dataStandard;const search=document.getElementById('search'+(type==='margine'?'Margine':'Standard')).value.toLowerCase().trim();const words=search?search.split(/\s+/).filter(w=>w):[];const fDim=document.getElementById('fDim'+t).value;const fMem=document.getElementById('fMem'+t).value;const fHDD=document.getElementById('fHDD'+t).value;const fProc=document.getElementById('fProc'+t).value;const fFreq=document.getElementById('fFreq'+t).value;const fVGA=document.getElementById('fVGA'+t).value;const fCol=document.getElementById('fCol'+t).value;
+const hasFilters=search||fDim||fMem||fHDD||fProc||fFreq||fVGA||fCol;
+const welcomeMsg=document.getElementById('welcomeMsg'+t);const resultsInfo=document.getElementById('resultsInfo'+t);const table=document.getElementById('table'+t);const noRes=document.getElementById('noRes'+t);
+if(!hasFilters){welcomeMsg.style.display='block';resultsInfo.classList.remove('show');table.classList.remove('show');noRes.classList.remove('show');document.getElementById('activeFilters'+t).classList.remove('show');return}
+welcomeMsg.style.display='none';resultsInfo.classList.add('show');
+const filtered=data.filter(item=>{let match=true;if(words.length>0){const text=[item.COD_VENDOR||'',item.DESCRIZIONE||'',item.FREQUENZA||'',item.VGA||''].join(' ').toLowerCase();match=words.every(w=>text.includes(w))}if(match&&fDim&&item.DIMENSIONE!==fDim)match=false;if(match&&fMem&&item.MEMORIA!==fMem)match=false;if(match&&fHDD&&item.HDD!==fHDD)match=false;if(match&&fProc&&item.PROCESSORE!==fProc)match=false;if(match&&fFreq&&item.FREQUENZA!==fFreq)match=false;if(match&&fVGA&&item.VGA!==fVGA)match=false;if(match&&fCol&&item.COLORE!==fCol)match=false;return match});
+const body=document.getElementById('body'+t);const count=document.getElementById('count'+t);const resetBtn=document.getElementById('reset'+t);const activeFilters=document.getElementById('activeFilters'+t);const tags=document.getElementById('tags'+t);
+count.textContent=`Trovati: ${filtered.length} prodotti`;resetBtn.style.display='inline-block';
+const activeTags=[];if(search)activeTags.push({label:'Ricerca',value:search,key:'search'});if(fDim)activeTags.push({label:'Dimensione',value:fDim,key:'dim'});if(fMem)activeTags.push({label:'Memoria',value:fMem,key:'mem'});if(fHDD)activeTags.push({label:'HDD',value:fHDD,key:'hdd'});if(fProc)activeTags.push({label:'Processore',value:fProc,key:'proc'});if(fFreq)activeTags.push({label:'Frequenza',value:fFreq,key:'freq'});if(fVGA)activeTags.push({label:'VGA',value:fVGA,key:'vga'});if(fCol)activeTags.push({label:'Colore',value:fCol,key:'col'});
+if(activeTags.length>0){activeFilters.classList.add('show');tags.innerHTML=activeTags.map(tag=>`<span class="filter-tag">${tag.label}: ${tag.value} <span class="remove" onclick="removeFilter('${type}','${tag.key}')">×</span></span>`).join('')}else{activeFilters.classList.remove('show')}
+if(filtered.length===0){body.innerHTML='';noRes.classList.add('show');table.classList.remove('show');return}
+noRes.classList.remove('show');table.classList.add('show');
+body.innerHTML=filtered.map(item=>`<tr><td><strong>${highlight(item.COD_VENDOR||'',words)}</strong></td><td class="desc-cell">${highlight(item.DESCRIZIONE||'',words)}</td><td>${item.DIMENSIONE||'-'}</td><td>${item.MEMORIA||'-'}</td><td>${item.HDD||'-'}</td><td>${item.PROCESSORE||'-'}</td><td>${highlight(item.FREQUENZA||'',words)||'-'}</td><td>${highlight(item.VGA||'',words)||'-'}</td><td>${item.COLORE||'-'}</td></tr>`).join('')}
 function reset(type){const t=type==='margine'?'M':'S';document.getElementById('search'+(type==='margine'?'Margine':'Standard')).value='';document.getElementById('fDim'+t).value='';document.getElementById('fMem'+t).value='';document.getElementById('fHDD'+t).value='';document.getElementById('fProc'+t).value='';document.getElementById('fFreq'+t).value='';document.getElementById('fVGA'+t).value='';document.getElementById('fCol'+t).value='';render(type)}
 function exportCSV(type){const data=type==='margine'?dataMargine:dataStandard;const headers=['COD_VENDOR','DESCRIZIONE','DIMENSIONE','MEMORIA','HDD','PROCESSORE','FREQUENZA','VGA','COLORE'];let csv=headers.join(',')+'\n';data.forEach(item=>{const row=headers.map(h=>'"'+(item[h]||'').toString().replace(/"/g,'""')+'"');csv+=row.join(',')+'\n'});const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download='prodotti_iva_'+type+'.csv';link.click()}
 window.onload=loadData;

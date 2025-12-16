@@ -43,6 +43,8 @@
         .btn:hover { background: #5568d3; transform: scale(1.05); }
         .btn-secondary { background: #6c757d; }
         .btn-secondary:hover { background: #5a6268; }
+        .btn-qr { background: #28a745; padding: 8px 16px; font-size: 13px; border-radius: 8px; }
+        .btn-qr:hover { background: #218838; }
         .table-container { padding: 30px; overflow: auto; max-height: 600px; }
         
         .welcome-message {
@@ -104,8 +106,6 @@
         tbody tr:hover { background: #f8f9fa; transform: scale(1.002); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .highlight { background-color: #fff3cd; padding: 2px 4px; border-radius: 3px; font-weight: 600; }
         .desc-cell { max-width: 200px; word-wrap: break-word; white-space: normal; line-height: 1.4; }
-        .qr-cell { text-align: center; padding: 8px !important; background: #f8f9fa; }
-        .qr-cell canvas { display: block; margin: 0 auto; border: 2px solid #ddd; border-radius: 5px; }
         .empty-value { color: #999; font-style: italic; font-size: 12px; }
         .no-results { text-align: center; padding: 60px; color: #6c757d; display: none; }
         .no-results.show { display: block; }
@@ -118,6 +118,111 @@
         .db-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-left: 10px; }
         .badge-margine { background: #d4edda; color: #155724; }
         .badge-standard { background: #cce5ff; color: #004085; }
+        
+        /* Modal QR Code */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            animation: fadeIn 0.3s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .modal.show { display: flex; align-items: center; justify-content: center; }
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+            position: relative;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .modal-close {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 30px;
+            font-weight: bold;
+            color: #999;
+            cursor: pointer;
+            transition: all 0.2s;
+            line-height: 1;
+        }
+        .modal-close:hover { color: #333; transform: scale(1.2); }
+        .modal-title {
+            font-size: 1.5em;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .modal-code {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            font-family: 'Courier New', monospace;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .modal-desc {
+            font-size: 0.95em;
+            color: #6c757d;
+            margin-bottom: 25px;
+            line-height: 1.4;
+        }
+        .modal-qr {
+            margin: 20px auto;
+            padding: 15px;
+            background: white;
+            border: 3px solid #667eea;
+            border-radius: 15px;
+            display: inline-block;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 25px;
+        }
+        .btn-print {
+            background: #667eea;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 15px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-print:hover { background: #5568d3; transform: scale(1.05); }
+        .btn-download {
+            background: #28a745;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 15px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-download:hover { background: #218838; transform: scale(1.05); }
+        
         @media (max-width: 768px) {
             .home-button { position: static; transform: none; margin-bottom: 10px; display: block; text-align: center; }
             .filters-container { grid-template-columns: 1fr; }
@@ -128,10 +233,9 @@
             .welcome-message { padding: 40px 20px; }
             .welcome-message h2 { font-size: 1.5em; }
             .welcome-message p { font-size: 1em; }
-            .qr-cell canvas { width: 60px !important; height: 60px !important; }
+            .modal-content { padding: 20px; max-width: 90%; }
         }
     </style>
-    <!-- QRCode.js Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
@@ -139,6 +243,22 @@
         <div class="loader"></div>
         <div class="loading-text">⏳ Caricamento database...</div>
     </div>
+    
+    <!-- Modal QR Code -->
+    <div id="qrModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <div class="modal-title">📱 QR Code Prodotto</div>
+            <div class="modal-code" id="modalCode"></div>
+            <div class="modal-desc" id="modalDesc"></div>
+            <div class="modal-qr" id="modalQR"></div>
+            <div class="modal-buttons">
+                <button class="btn-print" onclick="printQR()">🖨️ Stampa</button>
+                <button class="btn-download" onclick="downloadQR()">💾 Scarica</button>
+            </div>
+        </div>
+    </div>
+    
     <div id="mainContent" style="display:none;">
         <div class="container">
             <div class="header">
@@ -156,7 +276,7 @@
                         <input type="text" id="searchMargine" class="search-input" placeholder="Cerca..." autocomplete="off">
                         <span class="search-icon">🔍</span>
                     </div>
-                    <div class="search-hint">💡 Cerca per codice, descrizione, frequenza, VGA</div>
+                    <div class="search-hint">💡 Cerca per codice, descrizione, frequenza, VGA - Clicca sul pulsante QR per generare il codice</div>
                     <div class="filters-container">
                         <div class="filter-group"><label class="filter-label">Dimensione</label><select id="fDimM" class="filter-select"><option value="">Tutte</option></select></div>
                         <div class="filter-group"><label class="filter-label">Memoria</label><select id="fMemM" class="filter-select"><option value="">Tutte</option></select></div>
@@ -181,17 +301,17 @@
                         <h2>Database IVA Margine</h2>
                         <p>Utilizza la ricerca o i filtri per visualizzare i prodotti</p>
                         <div class="tips">
-                            <h3>💡 Come cercare:</h3>
+                            <h3>💡 Come usare:</h3>
                             <ul>
-                                <li>Digita nella barra di ricerca (codice, descrizione, VGA...)</li>
-                                <li>Usa i filtri per filtrare per caratteristiche specifiche</li>
-                                <li>Combina ricerca e filtri per risultati precisi</li>
-                                <li>1168 prodotti disponibili - QR code generati automaticamente</li>
+                                <li>Cerca il prodotto usando la barra di ricerca</li>
+                                <li>Clicca sul pulsante "📱 QR" per generare il QR code</li>
+                                <li>Stampa o scarica il QR code per le etichette</li>
+                                <li>1168 prodotti disponibili nel database</li>
                             </ul>
                         </div>
                     </div>
                     <table id="tableM">
-                        <thead><tr><th>QR</th><th>COD</th><th>DESCRIZIONE</th><th>DIM</th><th>MEM</th><th>HDD</th><th>PROC</th><th>FREQ</th><th>VGA</th><th>COL</th></tr></thead>
+                        <thead><tr><th style="width:8%;">AZIONE</th><th>COD</th><th>DESCRIZIONE</th><th>DIM</th><th>MEM</th><th>HDD</th><th>PROC</th><th>FREQ</th><th>VGA</th><th>COL</th></tr></thead>
                         <tbody id="bodyM"></tbody>
                     </table>
                     <div id="noResM" class="no-results"><h3>Nessun risultato</h3><p>Prova a modificare i filtri o la ricerca</p></div>
@@ -203,7 +323,7 @@
                         <input type="text" id="searchStandard" class="search-input" placeholder="Cerca..." autocomplete="off">
                         <span class="search-icon">🔍</span>
                     </div>
-                    <div class="search-hint">💡 Cerca per codice, descrizione, frequenza, VGA</div>
+                    <div class="search-hint">💡 Cerca per codice, descrizione, frequenza, VGA - Clicca sul pulsante QR per generare il codice</div>
                     <div class="filters-container">
                         <div class="filter-group"><label class="filter-label">Dimensione</label><select id="fDimS" class="filter-select"><option value="">Tutte</option></select></div>
                         <div class="filter-group"><label class="filter-label">Memoria</label><select id="fMemS" class="filter-select"><option value="">Tutte</option></select></div>
@@ -228,17 +348,17 @@
                         <h2>Database IVA Standard</h2>
                         <p>Utilizza la ricerca o i filtri per visualizzare i prodotti</p>
                         <div class="tips">
-                            <h3>💡 Come cercare:</h3>
+                            <h3>💡 Come usare:</h3>
                             <ul>
-                                <li>Digita nella barra di ricerca (codice, descrizione, VGA...)</li>
-                                <li>Usa i filtri per filtrare per caratteristiche specifiche</li>
-                                <li>Combina ricerca e filtri per risultati precisi</li>
-                                <li>2836 prodotti disponibili - QR code generati automaticamente</li>
+                                <li>Cerca il prodotto usando la barra di ricerca</li>
+                                <li>Clicca sul pulsante "📱 QR" per generare il QR code</li>
+                                <li>Stampa o scarica il QR code per le etichette</li>
+                                <li>2836 prodotti disponibili nel database</li>
                             </ul>
                         </div>
                     </div>
                     <table id="tableS">
-                        <thead><tr><th>QR</th><th>COD</th><th>DESCRIZIONE</th><th>DIM</th><th>MEM</th><th>HDD</th><th>PROC</th><th>FREQ</th><th>VGA</th><th>COL</th></tr></thead>
+                        <thead><tr><th style="width:8%;">AZIONE</th><th>COD</th><th>DESCRIZIONE</th><th>DIM</th><th>MEM</th><th>HDD</th><th>PROC</th><th>FREQ</th><th>VGA</th><th>COL</th></tr></thead>
                         <tbody id="bodyS"></tbody>
                     </table>
                     <div id="noResS" class="no-results"><h3>Nessun risultato</h3><p>Prova a modificare i filtri o la ricerca</p></div>
@@ -248,21 +368,80 @@
     </div>
     <script>
 let dataMargine=[],dataStandard=[],currentTab='margine';
+let currentQRCode = null;
+let currentProduct = null;
+
 async function loadData(){try{const[r1,r2]=await Promise.all([fetch('data_margine.json'),fetch('data_standard.json')]);dataMargine=await r1.json();dataStandard=await r2.json();document.getElementById('loadingScreen').style.display='none';document.getElementById('mainContent').style.display='block';populateFilters('margine',dataMargine);populateFilters('standard',dataStandard);setupEventListeners()}catch(e){document.getElementById('loadingScreen').innerHTML='<div style="color:white;text-align:center;"><h2>❌ Errore</h2><p>File JSON non trovati</p></div>'}}
 
-function generateQRCode(text, size = 100) {
-    const canvas = document.createElement('canvas');
-    canvas.width = size;
-    canvas.height = size;
-    const qr = new QRCode(canvas, {
-        text: text,
-        width: size,
-        height: size,
+function showQR(cod, desc) {
+    currentProduct = { cod, desc };
+    document.getElementById('modalCode').textContent = cod;
+    document.getElementById('modalDesc').textContent = desc;
+    
+    const qrContainer = document.getElementById('modalQR');
+    qrContainer.innerHTML = '';
+    
+    currentQRCode = new QRCode(qrContainer, {
+        text: cod,
+        width: 200,
+        height: 200,
         colorDark: "#000000",
         colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.M
+        correctLevel: QRCode.CorrectLevel.H
     });
-    return canvas;
+    
+    document.getElementById('qrModal').classList.add('show');
+}
+
+function closeModal() {
+    document.getElementById('qrModal').classList.remove('show');
+}
+
+function printQR() {
+    const printWindow = window.open('', '_blank');
+    const qrImg = document.querySelector('#modalQR img').src;
+    const cod = currentProduct.cod;
+    const desc = currentProduct.desc;
+    
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Stampa QR Code - ${cod}</title>
+            <style>
+                body { font-family: Arial; text-align: center; padding: 20px; }
+                h2 { margin: 10px 0; font-size: 24px; }
+                p { margin: 10px 0; font-size: 14px; color: #666; }
+                img { margin: 20px 0; border: 2px solid #333; }
+            </style>
+        </head>
+        <body>
+            <h2>${cod}</h2>
+            <p>${desc}</p>
+            <img src="${qrImg}" width="250" height="250">
+        </body>
+        </html>
+    `);
+    
+    setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+    }, 500);
+}
+
+function downloadQR() {
+    const canvas = document.querySelector('#modalQR canvas');
+    const link = document.createElement('a');
+    link.download = currentProduct.cod + '_QR.png';
+    link.href = canvas.toDataURL();
+    link.click();
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById('qrModal');
+    if (event.target == modal) {
+        closeModal();
+    }
 }
 
 function setupEventListeners(){document.getElementById('searchMargine').addEventListener('input',()=>render('margine'));document.getElementById('fDimM').addEventListener('change',()=>render('margine'));document.getElementById('fMemM').addEventListener('change',()=>render('margine'));document.getElementById('fHDDM').addEventListener('change',()=>render('margine'));document.getElementById('fProcM').addEventListener('change',()=>render('margine'));document.getElementById('fFreqM').addEventListener('change',()=>render('margine'));document.getElementById('fVGAM').addEventListener('change',()=>render('margine'));document.getElementById('fColM').addEventListener('change',()=>render('margine'));document.getElementById('resetM').addEventListener('click',()=>reset('margine'));document.getElementById('searchStandard').addEventListener('input',()=>render('standard'));document.getElementById('fDimS').addEventListener('change',()=>render('standard'));document.getElementById('fMemS').addEventListener('change',()=>render('standard'));document.getElementById('fHDDS').addEventListener('change',()=>render('standard'));document.getElementById('fProcS').addEventListener('change',()=>render('standard'));document.getElementById('fFreqS').addEventListener('change',()=>render('standard'));document.getElementById('fVGAS').addEventListener('change',()=>render('standard'));document.getElementById('fColS').addEventListener('change',()=>render('standard'));document.getElementById('resetS').addEventListener('click',()=>reset('standard'))}
@@ -354,21 +533,11 @@ function render(type){
     noRes.classList.remove('show');
     table.classList.add('show');
     
-    // Generate rows with QR codes
-    body.innerHTML = '';
-    filtered.forEach(item => {
-        const row = document.createElement('tr');
-        
-        // QR Code cell
-        const qrCell = document.createElement('td');
-        qrCell.className = 'qr-cell';
-        const qrDiv = document.createElement('div');
-        qrDiv.id = 'qr-' + Math.random().toString(36).substr(2, 9);
-        qrCell.appendChild(qrDiv);
-        row.appendChild(qrCell);
-        
-        // Other cells
-        row.innerHTML += `
+    body.innerHTML = filtered.map(item => {
+        const cod = (item.COD_VENDOR || '').replace(/'/g, "\\'");
+        const desc = (item.DESCRIZIONE || '').replace(/'/g, "\\'");
+        return `<tr>
+            <td><button class="btn btn-qr" onclick="showQR('${cod}','${desc}')">📱 QR</button></td>
             <td><strong>${highlight(item.COD_VENDOR||'',words)}</strong></td>
             <td class="desc-cell">${highlight(item.DESCRIZIONE||'',words)}</td>
             <td>${item.DIMENSIONE||'-'}</td>
@@ -378,22 +547,8 @@ function render(type){
             <td>${highlight(item.FREQUENZA||'',words)||'-'}</td>
             <td>${highlight(item.VGA||'',words)||'-'}</td>
             <td>${item.COLORE||'-'}</td>
-        `;
-        
-        body.appendChild(row);
-        
-        // Generate QR code after row is added to DOM
-        setTimeout(() => {
-            new QRCode(qrDiv, {
-                text: item.COD_VENDOR || '',
-                width: 100,
-                height: 100,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.M
-            });
-        }, 0);
-    });
+        </tr>`;
+    }).join('');
 }
 
 function reset(type){const t=type==='margine'?'M':'S';document.getElementById('search'+(type==='margine'?'Margine':'Standard')).value='';document.getElementById('fDim'+t).value='';document.getElementById('fMem'+t).value='';document.getElementById('fHDD'+t).value='';document.getElementById('fProc'+t).value='';document.getElementById('fFreq'+t).value='';document.getElementById('fVGA'+t).value='';document.getElementById('fCol'+t).value='';render(type)}

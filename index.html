@@ -453,9 +453,10 @@ function printQR() {
         </html>
     `);
     
+    printWindow.document.close();
+    
     setTimeout(() => {
         printWindow.print();
-        printWindow.close();
     }, 500);
 }
 

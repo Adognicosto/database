@@ -578,8 +578,8 @@ function render(type){
         const desc = item.DESCRIZIONE || '';
         return `<tr>
             <td><button class="btn btn-qr" onclick="showQR(${originalIdx}, '${type}')">📱 QR</button></td>
-            <td><strong>${highlight(sku,words)}</strong><button class="copy-btn" onclick="copyTextFromData(${idx}, 'COD_VENDOR', '${type}')">Copia</button></td>
-            <td class="desc-cell">${highlight(desc,words)}<button class="copy-btn" onclick="copyTextFromData(${idx}, 'DESCRIZIONE', '${type}')">Copia</button></td>
+            <td><strong>${highlight(sku,words)}</strong><button class="copy-btn" onclick="copyTextFromData(${idx}, 'COD_VENDOR', '${type}', event)">Copia</button></td>
+            <td class="desc-cell">${highlight(desc,words)}<button class="copy-btn" onclick="copyTextFromData(${idx}, 'DESCRIZIONE', '${type}', event)">Copia</button></td>
             <td>${item.DIMENSIONE||'-'}</td>
             <td>${item.MEMORIA||'-'}</td>
             <td>${item.HDD||'-'}</td>
@@ -621,24 +621,32 @@ function copyText(text, button) {
     });
 }
 
-function copyTextFromData(index, field, type) {
-    const data = type === 'margine' ? window.currentFilteredMargine : window.currentFilteredStandard;
-    const item = data[index];
-    const text = item[field] || '';
-    
-    navigator.clipboard.writeText(text).then(() => {
-        const button = event.target;
-        const originalText = button.textContent;
-        button.textContent = '✓ Copiato!';
-        button.classList.add('copied');
+function copyTextFromData(index, field, type, event) {
+    try {
+        const data = type === 'margine' ? window.currentFilteredMargine : window.currentFilteredStandard;
+        if (!data || !data[index]) {
+            alert('Errore: elemento non trovato');
+            return;
+        }
+        const item = data[index];
+        const text = item[field] || '';
         
-        setTimeout(() => {
-            button.textContent = originalText;
-            button.classList.remove('copied');
-        }, 2000);
-    }).catch(err => {
-        alert('Errore durante la copia: ' + err);
-    });
+        navigator.clipboard.writeText(text).then(() => {
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = '✓ Copiato!';
+            button.classList.add('copied');
+            
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.classList.remove('copied');
+            }, 2000);
+        }).catch(err => {
+            alert('Errore durante la copia: ' + err);
+        });
+    } catch (err) {
+        alert('Errore: ' + err.message);
+    }
 }
 
 window.onload=loadData;

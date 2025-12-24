@@ -1188,8 +1188,8 @@ function render() {
         const sku = item.COD_VENDOR || '';
         const desc = item.DESCRIZIONE || '';
         return `<tr>
-            <td><strong>${highlight(sku, words)}</strong><button class="copy-btn" onclick="copyTextFromData(${i}, 'COD_VENDOR')">Copia</button></td>
-            <td>${highlight(desc, words)}<button class="copy-btn" onclick="copyTextFromData(${i}, 'DESCRIZIONE')">Copia</button></td>
+            <td><strong>${highlight(sku, words)}</strong><button class="copy-btn" onclick="copyTextFromData(${i}, 'COD_VENDOR', event)">Copia</button></td>
+            <td>${highlight(desc, words)}<button class="copy-btn" onclick="copyTextFromData(${i}, 'DESCRIZIONE', event)">Copia</button></td>
             <td class="padre-cell">${highlight(item.STOCK_PADRE || '', words)}</td>
             <td>${item.ANNO || '-'}</td>
             <td>${item.TIPOLOGIA || '-'}</td>
@@ -1229,23 +1229,31 @@ function copyText(text, button) {
     });
 }
 
-function copyTextFromData(index, field) {
-    const item = window.currentFilteredData[index];
-    const text = item[field] || '';
-    
-    navigator.clipboard.writeText(text).then(() => {
-        const button = event.target;
-        const originalText = button.textContent;
-        button.textContent = '✓ Copiato!';
-        button.classList.add('copied');
+function copyTextFromData(index, field, event) {
+    try {
+        const item = window.currentFilteredData[index];
+        if (!item) {
+            alert('Errore: elemento non trovato');
+            return;
+        }
+        const text = item[field] || '';
         
-        setTimeout(() => {
-            button.textContent = originalText;
-            button.classList.remove('copied');
-        }, 2000);
-    }).catch(err => {
-        alert('Errore durante la copia: ' + err);
-    });
+        navigator.clipboard.writeText(text).then(() => {
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = '✓ Copiato!';
+            button.classList.add('copied');
+            
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.classList.remove('copied');
+            }, 2000);
+        }).catch(err => {
+            alert('Errore durante la copia: ' + err);
+        });
+    } catch (err) {
+        alert('Errore: ' + err.message);
+    }
 }
 
 function exportCSV() {

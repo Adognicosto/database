@@ -1188,14 +1188,17 @@ function render() {
         const sku = item.COD_VENDOR || '';
         const desc = item.DESCRIZIONE || '';
         return `<tr>
-            <td><strong>${highlight(sku, words)}</strong><button class="copy-btn" onclick="copyText('${sku.replace(/'/g, "\\'")}', this)">Copia</button></td>
-            <td>${highlight(desc, words)}<button class="copy-btn" onclick="copyText('${desc.replace(/'/g, "\\'")}', this)">Copia</button></td>
+            <td><strong>${highlight(sku, words)}</strong><button class="copy-btn" onclick="copyTextFromData(${i}, 'COD_VENDOR')">Copia</button></td>
+            <td>${highlight(desc, words)}<button class="copy-btn" onclick="copyTextFromData(${i}, 'DESCRIZIONE')">Copia</button></td>
             <td class="padre-cell">${highlight(item.STOCK_PADRE || '', words)}</td>
             <td>${item.ANNO || '-'}</td>
             <td>${item.TIPOLOGIA || '-'}</td>
             <td>${item.PAESE || '-'}</td>
         </tr>`;
     }).join('');
+    
+    // Salvo i dati filtrati in una variabile globale per il copy
+    window.currentFilteredData = filteredData;
 }
 
 function reset() {
@@ -1213,6 +1216,25 @@ function copyText(text, button) {
     const cleanText = tempDiv.textContent || tempDiv.innerText || text;
     
     navigator.clipboard.writeText(cleanText).then(() => {
+        const originalText = button.textContent;
+        button.textContent = '✓ Copiato!';
+        button.classList.add('copied');
+        
+        setTimeout(() => {
+            button.textContent = originalText;
+            button.classList.remove('copied');
+        }, 2000);
+    }).catch(err => {
+        alert('Errore durante la copia: ' + err);
+    });
+}
+
+function copyTextFromData(index, field) {
+    const item = window.currentFilteredData[index];
+    const text = item[field] || '';
+    
+    navigator.clipboard.writeText(text).then(() => {
+        const button = event.target;
         const originalText = button.textContent;
         button.textContent = '✓ Copiato!';
         button.classList.add('copied');

@@ -578,8 +578,8 @@ function render(type){
         const desc = item.DESCRIZIONE || '';
         return `<tr>
             <td><button class="btn btn-qr" onclick="showQR(${originalIdx}, '${type}')">📱 QR</button></td>
-            <td><strong>${highlight(sku,words)}</strong><button class="copy-btn" onclick="copyText('${sku.replace(/'/g, "\\'")}', this)">Copia</button></td>
-            <td class="desc-cell">${highlight(desc,words)}<button class="copy-btn" onclick="copyText('${desc.replace(/'/g, "\\'")}', this)">Copia</button></td>
+            <td><strong>${highlight(sku,words)}</strong><button class="copy-btn" onclick="copyTextFromData(${idx}, 'COD_VENDOR', '${type}')">Copia</button></td>
+            <td class="desc-cell">${highlight(desc,words)}<button class="copy-btn" onclick="copyTextFromData(${idx}, 'DESCRIZIONE', '${type}')">Copia</button></td>
             <td>${item.DIMENSIONE||'-'}</td>
             <td>${item.MEMORIA||'-'}</td>
             <td>${item.HDD||'-'}</td>
@@ -589,6 +589,13 @@ function render(type){
             <td>${item.COLORE||'-'}</td>
         </tr>`;
     }).join('');
+    
+    // Salvo i dati filtrati per il copy
+    if (type === 'margine') {
+        window.currentFilteredMargine = filtered;
+    } else {
+        window.currentFilteredStandard = filtered;
+    }
 }
 
 function reset(type){const t=type==='margine'?'M':'S';document.getElementById('search'+(type==='margine'?'Margine':'Standard')).value='';document.getElementById('fDim'+t).value='';document.getElementById('fMem'+t).value='';document.getElementById('fHDD'+t).value='';document.getElementById('fProc'+t).value='';document.getElementById('fFreq'+t).value='';document.getElementById('fVGA'+t).value='';document.getElementById('fCol'+t).value='';render(type)}
@@ -601,6 +608,26 @@ function copyText(text, button) {
     const cleanText = tempDiv.textContent || tempDiv.innerText || text;
     
     navigator.clipboard.writeText(cleanText).then(() => {
+        const originalText = button.textContent;
+        button.textContent = '✓ Copiato!';
+        button.classList.add('copied');
+        
+        setTimeout(() => {
+            button.textContent = originalText;
+            button.classList.remove('copied');
+        }, 2000);
+    }).catch(err => {
+        alert('Errore durante la copia: ' + err);
+    });
+}
+
+function copyTextFromData(index, field, type) {
+    const data = type === 'margine' ? window.currentFilteredMargine : window.currentFilteredStandard;
+    const item = data[index];
+    const text = item[field] || '';
+    
+    navigator.clipboard.writeText(text).then(() => {
+        const button = event.target;
         const originalText = button.textContent;
         button.textContent = '✓ Copiato!';
         button.classList.add('copied');

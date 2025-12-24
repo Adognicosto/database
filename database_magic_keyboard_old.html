@@ -231,29 +231,6 @@
             color: #ffdddd;
         }
         
-        .copy-btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 4px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 11px;
-            margin-left: 8px;
-            transition: all 0.2s ease;
-            font-weight: 600;
-        }
-        .copy-btn:hover {
-            background: #5568d3;
-            transform: scale(1.05);
-        }
-        .copy-btn:active {
-            transform: scale(0.95);
-        }
-        .copied {
-            background: #28a745 !important;
-        }
-        
         .table-container {
             padding: 30px;
             overflow: auto;
@@ -1185,11 +1162,9 @@ function render() {
     
     const tbody = document.getElementById('tableBody');
     tbody.innerHTML = filteredData.map((item, i) => {
-        const sku = item.COD_VENDOR || '';
-        const desc = item.DESCRIZIONE || '';
         return `<tr>
-            <td><strong>${highlight(sku, words)}</strong><button class="copy-btn" onclick="copyText('${sku.replace(/'/g, "\\'")}', this)">Copia</button></td>
-            <td>${highlight(desc, words)}<button class="copy-btn" onclick="copyText('${desc.replace(/'/g, "\\'")}', this)">Copia</button></td>
+            <td><strong>${highlight(item.COD_VENDOR || '', words)}</strong></td>
+            <td>${highlight(item.DESCRIZIONE || '', words)}</td>
             <td class="padre-cell">${highlight(item.STOCK_PADRE || '', words)}</td>
             <td>${item.ANNO || '-'}</td>
             <td>${item.TIPOLOGIA || '-'}</td>
@@ -1204,26 +1179,6 @@ function reset() {
     document.getElementById('filterTipologia').value = '';
     document.getElementById('filterPaese').value = '';
     render();
-}
-
-function copyText(text, button) {
-    // Rimuovo eventuali tag HTML dal testo
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = text;
-    const cleanText = tempDiv.textContent || tempDiv.innerText || text;
-    
-    navigator.clipboard.writeText(cleanText).then(() => {
-        const originalText = button.textContent;
-        button.textContent = '✓ Copiato!';
-        button.classList.add('copied');
-        
-        setTimeout(() => {
-            button.textContent = originalText;
-            button.classList.remove('copied');
-        }, 2000);
-    }).catch(err => {
-        alert('Errore durante la copia: ' + err);
-    });
 }
 
 function exportCSV() {

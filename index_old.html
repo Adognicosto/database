@@ -45,10 +45,6 @@
         .btn-secondary:hover { background: #5a6268; }
         .btn-qr { background: #28a745; padding: 8px 16px; font-size: 13px; border-radius: 8px; }
         .btn-qr:hover { background: #218838; }
-        .copy-btn { background: #667eea; color: white; border: none; padding: 4px 10px; border-radius: 5px; cursor: pointer; font-size: 11px; margin-left: 8px; transition: all 0.2s ease; font-weight: 600; }
-        .copy-btn:hover { background: #5568d3; transform: scale(1.05); }
-        .copy-btn:active { transform: scale(0.95); }
-        .copied { background: #28a745 !important; }
         .table-container { padding: 30px; overflow: auto; max-height: 600px; }
         
         .welcome-message {
@@ -574,12 +570,10 @@ function render(type){
     
     body.innerHTML = filtered.map((item, idx) => {
         const originalIdx = data.indexOf(item);
-        const sku = item.COD_VENDOR || '';
-        const desc = item.DESCRIZIONE || '';
         return `<tr>
             <td><button class="btn btn-qr" onclick="showQR(${originalIdx}, '${type}')">📱 QR</button></td>
-            <td><strong>${highlight(sku,words)}</strong><button class="copy-btn" onclick="copyText('${sku.replace(/'/g, "\\'")}', this)">Copia</button></td>
-            <td class="desc-cell">${highlight(desc,words)}<button class="copy-btn" onclick="copyText('${desc.replace(/'/g, "\\'")}', this)">Copia</button></td>
+            <td><strong>${highlight(item.COD_VENDOR||'',words)}</strong></td>
+            <td class="desc-cell">${highlight(item.DESCRIZIONE||'',words)}</td>
             <td>${item.DIMENSIONE||'-'}</td>
             <td>${item.MEMORIA||'-'}</td>
             <td>${item.HDD||'-'}</td>
@@ -594,25 +588,6 @@ function render(type){
 function reset(type){const t=type==='margine'?'M':'S';document.getElementById('search'+(type==='margine'?'Margine':'Standard')).value='';document.getElementById('fDim'+t).value='';document.getElementById('fMem'+t).value='';document.getElementById('fHDD'+t).value='';document.getElementById('fProc'+t).value='';document.getElementById('fFreq'+t).value='';document.getElementById('fVGA'+t).value='';document.getElementById('fCol'+t).value='';render(type)}
 
 function exportCSV(type){const data=type==='margine'?dataMargine:dataStandard;const headers=['COD_VENDOR','DESCRIZIONE','DIMENSIONE','MEMORIA','HDD','PROCESSORE','FREQUENZA','VGA','COLORE'];let csv=headers.join(',')+'\n';data.forEach(item=>{const row=headers.map(h=>'"'+(item[h]||'').toString().replace(/"/g,'""')+'"');csv+=row.join(',')+'\n'});const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download='prodotti_iva_'+type+'.csv';link.click()}
-
-function copyText(text, button) {
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = text;
-    const cleanText = tempDiv.textContent || tempDiv.innerText || text;
-    
-    navigator.clipboard.writeText(cleanText).then(() => {
-        const originalText = button.textContent;
-        button.textContent = '✓ Copiato!';
-        button.classList.add('copied');
-        
-        setTimeout(() => {
-            button.textContent = originalText;
-            button.classList.remove('copied');
-        }, 2000);
-    }).catch(err => {
-        alert('Errore durante la copia: ' + err);
-    });
-}
 
 window.onload=loadData;
     </script>

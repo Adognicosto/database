@@ -172,21 +172,36 @@
             margin-bottom: 10px;
             font-weight: 700;
         }
+        .modal-code-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+        .modal-desc-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
         .modal-code {
+            flex: 1;
             font-size: 1.3em;
             font-weight: 600;
             color: #333;
-            margin-bottom: 5px;
             font-family: 'Courier New', monospace;
             background: #f8f9fa;
             padding: 10px;
             border-radius: 8px;
         }
         .modal-desc {
+            flex: 1;
             font-size: 0.95em;
             color: #6c757d;
-            margin-bottom: 25px;
             line-height: 1.4;
+        }
+        .modal-copy-btn {
+            flex-shrink: 0;
         }
         .modal-qr {
             margin: 20px auto;
@@ -253,8 +268,14 @@
         <div class="modal-content">
             <span class="modal-close" onclick="closeModal()">&times;</span>
             <div class="modal-title">📱 QR Code Prodotto</div>
-            <div class="modal-code" id="modalCode"></div>
-            <div class="modal-desc" id="modalDesc"></div>
+            <div class="modal-code-container">
+                <div class="modal-code" id="modalCode"></div>
+                <button class="copy-btn modal-copy-btn" onclick="copyFromModal('cod', event)">Copia</button>
+            </div>
+            <div class="modal-desc-container">
+                <div class="modal-desc" id="modalDesc"></div>
+                <button class="copy-btn modal-copy-btn" onclick="copyFromModal('desc', event)">Copia</button>
+            </div>
             <div class="modal-qr" id="modalQR"></div>
             <div class="modal-buttons">
                 <button class="btn-print" onclick="printQR()">🖨️ Stampa</button>
@@ -630,6 +651,28 @@ function copyTextFromData(index, field, type, event) {
         }
         const item = data[index];
         const text = item[field] || '';
+        
+        navigator.clipboard.writeText(text).then(() => {
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = '✓ Copiato!';
+            button.classList.add('copied');
+            
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.classList.remove('copied');
+            }, 2000);
+        }).catch(err => {
+            alert('Errore durante la copia: ' + err);
+        });
+    } catch (err) {
+        alert('Errore: ' + err.message);
+    }
+}
+
+function copyFromModal(field, event) {
+    try {
+        const text = field === 'cod' ? currentProduct.cod : currentProduct.desc;
         
         navigator.clipboard.writeText(text).then(() => {
             const button = event.target;
